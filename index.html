@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caption Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: #121212;
+            color: #ffffff;
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glowing-text {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #00e1ff;
+            text-shadow: 0 0 10px rgba(0, 225, 255, 0.8);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-6">
+
+    <h1 class="glowing-text mb-6">📸 Social Media Caption Generator</h1>
+
+    <div class="max-w-3xl w-full glassmorphism p-6 rounded-2xl shadow-xl space-y-6 border border-gray-700">
+        <!-- Image & Captions Section -->
+        <div class="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+            <!-- Image Upload Section -->
+            <div class="w-full md:w-1/2 flex flex-col items-center">
+                <div id="image-preview" class="w-full aspect-square bg-gray-800 rounded-xl flex items-center justify-center">
+                    <svg class="h-12 w-12 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V12M7 12V8m0 4h4m-4 0H3m14-2v6m0-6V8m0 4h4m-4 0h-4"></path>
+                    </svg>
+                </div>
+                <input type="file" id="image-upload" class="hidden" accept="image/*">
+                <div class="flex w-full mt-4 space-x-2">
+                    <button id="upload-btn" class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition duration-300">
+                        Upload Image
+                    </button>
+                    <button id="generate-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition duration-300">
+                        Generate Captions
+                    </button>
+                </div>
+            </div>
+
+            <!-- Generated Captions (Right Side) -->
+            <div id="captions-container" class="hidden w-full md:w-1/2">
+                <h2 class="text-xl font-semibold text-center text-gray-300 mb-3">✨ Generated Captions</h2>
+                <div id="captions-list" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const imageUpload = document.getElementById('image-upload');
+        const uploadBtn = document.getElementById('upload-btn');
+        const generateBtn = document.getElementById('generate-btn');
+        const imagePreview = document.getElementById('image-preview');
+        const captionsContainer = document.getElementById('captions-container');
+        const captionsList = document.getElementById('captions-list');
+
+        uploadBtn.addEventListener('click', () => imageUpload.click());
+
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    imagePreview.innerHTML = `<img src="${reader.result}" class="w-full h-full object-cover rounded-xl">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        generateBtn.addEventListener("click", async () => {
+    if (!imageUpload.files.length) {
+        alert("Please upload an image first.");
+        return;
+    }
+
+    // Show captions container
+    captionsList.innerHTML = "";
+    captionsContainer.classList.remove("hidden");
+
+    // Prepare FormData
+    const formData = new FormData();
+    formData.append("file", imageUpload.files[0]);
+
+    try {
+        // Send image to FastAPI backend
+        const response = await fetch("http://127.0.0.1:8000/generate-captions/", {
+            method: "POST",
+            body: formData,
+        });
+
+        const data = await response.json();
+
+        if (data.instagram_captions) {
+            data.instagram_captions.forEach((caption, index) => {
+                if (caption.trim() !== "") {
+                    setTimeout(() => {
+                        const captionCard = document.createElement("div");
+                        captionCard.className =
+                            "flex justify-between items-center bg-gray-900 border border-gray-700 p-3 rounded-lg shadow-sm opacity-0 translate-y-3 transition-all duration-500 ease-out";
+                        captionCard.innerHTML = `
+                            <p class="text-sm text-gray-300">${caption}</p>
+                            <button onclick="copyToClipboard('${caption}')" class="hover:bg-gray-700 p-2 rounded-lg">
+                                📋
+                            </button>
+                        `;
+                        captionsList.appendChild(captionCard);
+                        setTimeout(() => captionCard.classList.add("opacity-100", "translate-y-0"), 100);
+                    }, index * 200);
+                }
+            });
+        }
+    } catch (error) {
+        console.error("Error generating captions:", error);
+        alert("Failed to generate captions. Please try again.");
+    }
+});
+
+// Function to copy text to clipboard
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text);
+    alert("Copied to clipboard!");
+}
+
+    </script>
+
+</body>
+</html>
