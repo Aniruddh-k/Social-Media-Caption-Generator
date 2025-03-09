@@ -10,7 +10,6 @@ This project is a **Social Media Caption Generator** that generates engaging Ins
 
 ## 🎥 Website Preview
 ![Website Screenshot](website_screenshot.png)
-> Upload an image of the website as `website_screenshot.png` in the repository.
 
 ## 🛠️ Features
 - Upload an image via the frontend
@@ -86,5 +85,5 @@ curl -X POST "http://127.0.0.1:8000/generate-captions/" -F "file=@image.jpg"
 MIT License
 
 ---
-Made with ❤️ by **Your Name**
+Made with ❤️ by **Aniruddha Kide**
 
