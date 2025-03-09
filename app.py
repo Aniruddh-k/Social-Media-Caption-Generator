@@ -23,7 +23,7 @@ processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-larg
 model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large")
 
 # ✅ Configure Gemini API
-genai.configure(api_key="AIzaSyCOA5dibJ6frNCecPDIZGoaaZAeW-2BtC8")
+genai.configure(api_key="KEY")
 gemini_model = genai.GenerativeModel("gemini-1.5-flash")
 
 @app.post("/generate-captions/")
