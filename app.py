@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change this to your frontend URL if needed
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -18,25 +18,21 @@ app.add_middleware(
 
 
 
-# ✅ Load BLIP model & processor
+
 processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-large")
 model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large")
 
-# ✅ Configure Gemini API
+
 genai.configure(api_key="KEY")
 gemini_model = genai.GenerativeModel("gemini-1.5-flash")
 
 @app.post("/generate-captions/")
 async def generate_captions(file: UploadFile = File(...)):
-    # ✅ Load Image
-    image = Image.open(io.BytesIO(await file.read())).convert("RGB")
 
-    # ✅ Generate Caption with BLIP
+    image = Image.open(io.BytesIO(await file.read())).convert("RGB")
     inputs = processor(image, return_tensors="pt")
     output = model.generate(**inputs)
     caption = processor.decode(output[0], skip_special_tokens=True)
-
-    # ✅ Enhance Caption with Gemini for Instagram
     prompt = f"""
     Generate five unique and engaging Instagram captions for the following description. 
     Each caption should be fun, include emojis, and use relevant hashtags with GenZ attitude. Keep them under 20 words.
